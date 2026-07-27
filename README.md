@@ -1,132 +1,45 @@
 # DirectRent Website
 
-**Verified Connections. Transparent Renting.**
+Investor-grade landing page for DirectRent — Verified Connections. Transparent Renting.
 
-DirectRent is a Tanzanian PropTech platform designed to connect tenants directly with landlords through verified listings, transparent rental workflows and digital property management tools.
+## Local setup
 
-## Mission
+```bash
+npm install
+npm run dev
+```
 
-Reduce rental fraud, eliminate unnecessary broker dependency and make renting safer, faster and more transparent across Tanzania.
+Open http://localhost:3000
 
-## Website
+## Build
 
-https://directrent.app
+```bash
+npm run build
+```
 
-## APK Download
+## Cloudflare Pages deployment
 
-https://directrent.app/download
+1. Push this project to GitHub.
+2. In Cloudflare Pages, create a new project from the repository.
+3. Framework preset: Next.js.
+4. Build command:
 
-## Platform Components
+```bash
+npx @cloudflare/next-on-pages@latest
+```
 
-### Website
+5. Build output directory:
 
-* Marketing website
-* Investor information
-* APK distribution
-* Contact and partnership channels
+```bash
+.vercel/output/static
+```
 
-### Mobile App
+6. Add custom domain: `directrent.app`.
+7. Configure DNS so `directrent.app` points to Cloudflare Pages.
 
-* Verified property discovery
-* Viewing requests
-* Landlord management tools
-* Tenant onboarding
-* Rental tracking
+Optional CLI deploy:
 
-### Backend API
-
-* FastAPI
-* PostgreSQL-ready architecture
-* Authentication and authorization
-* Listing management
-* Verification workflows
-
-## Technology Stack
-
-### Frontend
-
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* Framer Motion
-
-### Infrastructure
-
-* Cloudflare Pages
-* Cloudflare R2
-* Cloudflare DNS
-
-### Mobile
-
-* Flutter
-
-### Backend
-
-* FastAPI
-* SQLAlchemy
-* PostgreSQL
-
-## Current Status
-
-DirectRent is currently in beta testing and infrastructure rollout phase.
-
-### Active Services
-
-* Website: https://directrent.app
-* APK Distribution: https://downloads.directrent.app
-* API: https://api.directrent.app
-
-## Roadmap
-
-### Phase 1
-
-* Website launch
-* APK distribution
-* Beta testing
-
-### Phase 2
-
-* Verification system
-* Landlord onboarding
-* Tenant onboarding
-
-### Phase 3
-
-* Payments integration
-* Rental management
-* Analytics
-
-### Phase 4
-
-* National expansion
-* Institutional partnerships
-* Investment and scaling
-
-## Founder
-
-Said Msham Mbonde
-
-BSc Computer Engineering and Information Technology
-
-United African University of Tanzania (UAUT)
-
-Founder & Lead Developer — DirectRent
-
-## Contact
-
-General:
-[hello@directrent.app](mailto:hello@directrent.app)
-
-Support:
-[support@directrent.app](mailto:support@directrent.app)
-
-Investors:
-[investors@directrent.app](mailto:investors@directrent.app)
-
-Partnerships:
-[partnerships@directrent.app](mailto:partnerships@directrent.app)
-
----
-
-DirectRent © 2026
+```bash
+npm run pages:build
+npm run deploy
+```
