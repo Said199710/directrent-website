@@ -1,39 +1,12 @@
-# Dependencies
 node_modules/
-
-# Next.js
 .next/
 out/
-
-# Environment variables
+.vercel/
 .env
 .env.local
-.env.*.local
-
-# Cloudflare local files
-.wrangler/
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Operating system
 .DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# TypeScript cache
-*.tsbuildinfo
-next-env.d.ts
-
-# Temporary and backup files
-*.bak
-*.backup
-*~
+*.log
+public/downloads/*.apk
+src/app/*.backup-*.tsx
+src/lib/*.backup-*.ts
+.wrangler/
