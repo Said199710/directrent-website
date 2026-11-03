@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
-import { adminApi, resolveApiFileUrl } from "@/lib/admin-api";
+import { adminApi } from "@/lib/admin-api";
+import PrivateKYCDocument from "@/components/admin/PrivateKYCDocument";
 
 function Field({
   label,
@@ -40,7 +41,7 @@ function ReviewContent() {
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    if (!kind || !userId) {
+    if (!["tenant", "landlord"].includes(kind) || !/^\d+$/.test(userId)) {
       setError("KYC type or user ID is missing.");
       return;
     }
@@ -209,53 +210,9 @@ function ReviewContent() {
           </div>
         ) : (
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {documents.map((document: any) => {
-              const fileUrl = resolveApiFileUrl(document.file_url);
-
-              const isImage =
-                /\.(png|jpe?g|webp|gif)(\?.*)?$/i.test(fileUrl) ||
-                fileUrl.startsWith("data:image");
-
-              return (
-                <article
-                  key={document.id}
-                  className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950"
-                >
-                  {isImage ? (
-                    <a href={fileUrl} target="_blank" rel="noreferrer">
-                      <img
-                        src={fileUrl}
-                        alt={document.document_type}
-                        className="h-64 w-full bg-black object-contain"
-                      />
-                    </a>
-                  ) : (
-                    <div className="grid h-64 place-items-center p-5 text-center text-slate-400">
-                      Preview is unavailable for this file type.
-                    </div>
-                  )}
-
-                  <div className="p-5">
-                    <h3 className="font-bold capitalize">
-                      {String(document.document_type).replaceAll("_", " ")}
-                    </h3>
-
-                    <p className="mt-2 text-sm text-slate-400">
-                      Status: {document.status}
-                    </p>
-
-                    <a
-                      href={fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-4 inline-flex rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500"
-                    >
-                      Open full document
-                    </a>
-                  </div>
-                </article>
-              );
-            })}
+            {documents.map((document: any) => (
+              <PrivateKYCDocument key={document.id} document={document} />
+            ))}
           </div>
         )}
       </section>
@@ -271,6 +228,7 @@ function ReviewContent() {
           value={note}
           onChange={(event) => setNote(event.target.value)}
           rows={5}
+          maxLength={2000}
           placeholder="Explain the verification decision..."
           className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-4 outline-none focus:border-blue-500"
         />
@@ -286,7 +244,7 @@ function ReviewContent() {
 
           <button
             disabled={saving}
-            onClick={() => decide("changes_requested")}
+            onClick={() => decide("reupload_required")}
             className="rounded-xl bg-amber-600 px-5 py-3 font-bold text-white hover:bg-amber-500 disabled:opacity-40"
           >
             Request changes
