@@ -16,19 +16,26 @@ const links = [
 export default function AdminShell({ children, title }: { children: React.ReactNode; title: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [superAdmin, setSuperAdmin] = useState(false);
+  const [access, setAccess] = useState<{ super_admin: boolean; staff_role?: string } | null>(null);
+  const allowedPaths = access?.staff_role === "property_reviewer" ? ["/admin/listings", "/admin/inbox"]
+    : access?.staff_role === "finance_admin" ? ["/admin/payments", "/admin/withdrawals"] : null;
+  const scopedHome = allowedPaths?.[0];
+
+  useEffect(() => {
+    if (pathname === "/admin" && scopedHome) router.replace(scopedHome);
+  }, [pathname, router, scopedHome]);
   useEffect(() => {
     if (!getAdminToken()) return;
     const controller = new AbortController();
-    void adminApi<{ super_admin: boolean }>("/admin-console/capabilities", { signal: controller.signal })
-      .then(result => { if (!controller.signal.aborted) setSuperAdmin(result.super_admin); })
-      .catch(() => { if (!controller.signal.aborted) setSuperAdmin(false); });
+    void adminApi<{ super_admin: boolean; staff_role?: string }>("/admin-console/capabilities", { signal: controller.signal })
+      .then(result => { if (!controller.signal.aborted) setAccess(result); })
+      .catch(() => { if (!controller.signal.aborted) setAccess(null); });
     return () => controller.abort();
   }, []);
-  const visibleLinks = superAdmin
+  const visibleLinks = access?.super_admin
     ? [...links, ["/admin/super-admin", "Super Admin", ShieldCheck] as const,
         ["/admin/audit-logs", "Audit Logs", ScrollText] as const]
-    : links;
+    : links.filter(([href]) => !allowedPaths || allowedPaths.includes(href));
   const menu = useRef<HTMLDialogElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
 
