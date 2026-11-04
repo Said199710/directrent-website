@@ -1,21 +1,34 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BarChart3, Users, Building2, ShieldCheck, Scale, CreditCard, Wallet, ScrollText, LogOut, Inbox, Menu, X } from "lucide-react";
-import { clearAdminToken } from "@/lib/admin-api";
+import { adminApi, clearAdminToken, getAdminToken } from "@/lib/admin-api";
 
 const links = [
   ["/admin", "Dashboard", BarChart3], ["/admin/users", "Users", Users],
   ["/admin/listings", "Properties", Building2], ["/admin/trust-center", "Trust Center", ShieldCheck],
   ["/admin/inbox", "Inbox", Inbox],
   ["/admin/disputes", "Disputes", Scale], ["/admin/payments", "Payments", CreditCard],
-  ["/admin/withdrawals", "Withdrawals", Wallet], ["/admin/audit-logs", "Audit Logs", ScrollText],
+  ["/admin/withdrawals", "Withdrawals", Wallet],
 ] as const;
 
 export default function AdminShell({ children, title }: { children: React.ReactNode; title: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [superAdmin, setSuperAdmin] = useState(false);
+  useEffect(() => {
+    if (!getAdminToken()) return;
+    const controller = new AbortController();
+    void adminApi<{ super_admin: boolean }>("/admin-console/capabilities", { signal: controller.signal })
+      .then(result => { if (!controller.signal.aborted) setSuperAdmin(result.super_admin); })
+      .catch(() => { if (!controller.signal.aborted) setSuperAdmin(false); });
+    return () => controller.abort();
+  }, []);
+  const visibleLinks = superAdmin
+    ? [...links, ["/admin/super-admin", "Super Admin", ShieldCheck] as const,
+        ["/admin/audit-logs", "Audit Logs", ScrollText] as const]
+    : links;
   const menu = useRef<HTMLDialogElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
 
@@ -42,7 +55,7 @@ export default function AdminShell({ children, title }: { children: React.ReactN
   const navigation = (
     <>
       <nav aria-label="Admin navigation" className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-        {links.map(([href, label, Icon]) => {
+        {visibleLinks.map(([href, label, Icon]) => {
           const active = pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
           return (
             <Link
