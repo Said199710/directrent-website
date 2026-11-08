@@ -1,0 +1,8 @@
+"use client";
+import {useEffect,useRef,useState} from 'react';
+import {API_URL,getAdminToken} from '@/lib/admin-api';
+export default function PrivateEvidence({id,label}:{id:string;label:string}){const[url,setUrl]=useState(''),[image,setImage]=useState(false),[error,setError]=useState(''),[busy,setBusy]=useState(false),current=useRef('');
+ useEffect(()=>()=>{if(current.current)URL.revokeObjectURL(current.current)},[]);
+ async function load(){setBusy(true);setError('');try{const token=getAdminToken();if(!token)throw new Error('Sign in to review evidence');const response=await fetch(`${API_URL}/admin-console/kyc-documents/${encodeURIComponent(id)}/file`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store',credentials:'omit'});if(!response.ok)throw new Error(`Evidence access failed (${response.status})`);const blob=await response.blob();if(current.current)URL.revokeObjectURL(current.current);const local=URL.createObjectURL(blob);current.current=local;setUrl(local);setImage(['image/jpeg','image/png','image/webp'].includes(blob.type))}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ return <article className="rounded-xl border border-white/10 bg-slate-950 p-4"><h3 className="font-semibold">{label.replaceAll('_',' ')}</h3>{image&&url&&<img src={url} alt={label} className="my-3 h-64 w-full object-contain"/>}{error&&<p role="alert" className="my-3 text-red-300">{error}</p>}{url?<a href={url} download={`evidence-${id}`} className="mt-3 inline-block text-blue-400 underline">Download private evidence</a>:<button disabled={busy} onClick={()=>void load()} className="mt-3 rounded-lg bg-blue-600 px-4 py-2 disabled:opacity-40">{busy?'Loading…':'Load authenticated evidence'}</button>}</article>
+}

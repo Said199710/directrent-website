@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
+import PrivateEvidence from "@/components/admin/PrivateEvidence";
+import {useCapabilities,can} from "@/lib/staff-access";
 import { adminApi } from "@/lib/admin-api";
-import PrivateKYCDocument from "@/components/admin/PrivateKYCDocument";
 
 function Field({
   label,
@@ -30,6 +31,7 @@ function Field({
 
 function ReviewContent() {
   const router = useRouter();
+  const {capabilities}=useCapabilities();
   const searchParams = useSearchParams();
 
   const kind = searchParams.get("kind") || "";
@@ -41,7 +43,7 @@ function ReviewContent() {
   const [saving, setSaving] = useState(false);
 
   async function load() {
-    if (!["tenant", "landlord"].includes(kind) || !/^\d+$/.test(userId)) {
+    if (!kind || !userId) {
       setError("KYC type or user ID is missing.");
       return;
     }
@@ -210,9 +212,7 @@ function ReviewContent() {
           </div>
         ) : (
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {documents.map((document: any) => (
-              <PrivateKYCDocument key={document.id} document={document} />
-            ))}
+            {documents.map((document: any) => <PrivateEvidence key={document.id} id={document.id} label={document.document_type}/>)}
           </div>
         )}
       </section>
@@ -228,14 +228,13 @@ function ReviewContent() {
           value={note}
           onChange={(event) => setNote(event.target.value)}
           rows={5}
-          maxLength={2000}
           placeholder="Explain the verification decision..."
           className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-4 outline-none focus:border-blue-500"
         />
 
         <div className="mt-5 flex flex-wrap gap-3">
           <button
-            disabled={saving || documents.length === 0}
+            disabled={saving || documents.length === 0 || !can(capabilities,"kyc.review")}
             onClick={() => decide("approved")}
             className="rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
@@ -243,15 +242,15 @@ function ReviewContent() {
           </button>
 
           <button
-            disabled={saving}
-            onClick={() => decide("reupload_required")}
+            disabled={saving || !can(capabilities,"kyc.review")}
+            onClick={() => decide("changes_requested")}
             className="rounded-xl bg-amber-600 px-5 py-3 font-bold text-white hover:bg-amber-500 disabled:opacity-40"
           >
             Request changes
           </button>
 
           <button
-            disabled={saving}
+            disabled={saving || !can(capabilities,"kyc.review")}
             onClick={() => decide("rejected")}
             className="rounded-xl bg-red-600 px-5 py-3 font-bold text-white hover:bg-red-500 disabled:opacity-40"
           >

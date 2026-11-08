@@ -15,3 +15,17 @@ body { color: var(--foreground); background: var(--background); font-family: Int
 .lead { @apply mt-5 text-lg leading-8 text-slate-600; }
 .card { @apply rounded-3xl border border-slate-200/80 bg-white p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:shadow-premium; }
 .gradient-text { @apply bg-gradient-to-r from-ink via-brand to-accent bg-clip-text text-transparent; }
+
+.dr-sidebar-dialog::backdrop {
+  background: rgba(2, 6, 23, .74);
+  backdrop-filter: blur(3px);
+}
+
+html:has([data-slot="sidebar-wrapper"]) {
+  color-scheme: dark;
+}
+
+[data-slot="sidebar-content"] {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}

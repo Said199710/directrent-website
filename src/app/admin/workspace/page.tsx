@@ -1,0 +1,3 @@
+"use client";
+import Link from 'next/link';import AdminShell from '@/components/admin/AdminShell';import {useCapabilities,can} from '@/lib/staff-access';
+export default function Page(){const{capabilities:c}=useCapabilities();return <AdminShell title="Staff Workspace"><p className="mb-5">Internal collaboration uses deliberate role grants and resource membership.</p><div className="flex flex-wrap gap-4">{['messages','channels','tasks','announcements'].filter(k=>can(c,'workspace.'+k)).map(k=><Link className="rounded-xl bg-blue-600 p-4 capitalize" key={k} href={'/admin/workspace/'+k}>{k}</Link>)}</div><p className="mt-5 text-slate-400">Ask a super admin to grant Workspace permissions through Roles & permissions if no sections appear.</p></AdminShell>}

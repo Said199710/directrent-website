@@ -1,2 +1,21 @@
-"use client"; import {useEffect,useState} from 'react'; import AdminShell from '@/components/admin/AdminShell'; import {adminApi} from '@/lib/admin-api';
-export default function Dashboard(){const[d,setD]=useState<any>();const[e,setE]=useState('');useEffect(()=>{adminApi('/admin-console/dashboard').then(setD).catch(x=>setE(x.message))},[]);const cards=d?[['Total Users',d.users.total],['Landlords',d.users.landlords],['Tenants',d.users.tenants],['Properties',d.listings.total],['Pending KYC',d.kyc.tenant_pending+d.kyc.landlord_pending],['Open Disputes',d.operations.open_disputes],['Pending Withdrawals',d.operations.pending_withdrawals],['Payment Value',`TZS ${Number(d.payments.completed_value).toLocaleString()}`]]:[];return <AdminShell title="Executive Dashboard">{e&&<p className="mb-5 rounded-xl bg-red-500/10 p-4 text-red-300">{e}</p>}<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([k,v])=><div key={k} className="rounded-2xl border border-white/10 bg-slate-900 p-6"><p className="text-sm text-slate-400">{k}</p><p className="mt-3 text-3xl font-black">{v}</p></div>)}</div><div className="mt-7 grid gap-5 lg:grid-cols-2"><div className="rounded-2xl border border-white/10 bg-slate-900 p-6"><h2 className="font-bold">Moderation workload</h2><p className="mt-4 text-slate-400">{d?`${d.listings.pending} properties and ${d.kyc.tenant_pending+d.kyc.landlord_pending} KYC cases need attention.`:'Loading live operational data…'}</p></div><div className="rounded-2xl border border-white/10 bg-slate-900 p-6"><h2 className="font-bold">Security status</h2><p className="mt-4 text-slate-400">{d?`${d.operations.security_incidents} open incidents. Admin access is protected with password + TOTP.`:'Loading…'}</p></div></div></AdminShell>}
+"use client";
+import {useCallback,useEffect,useRef,useState} from 'react';
+import AdminShell from '@/components/admin/AdminShell';
+import {adminApi,isAccessDenial} from '@/lib/admin-api';
+import {useCapabilities} from '@/lib/staff-access';
+import {DashboardOverview,parseDashboard,type DashboardData,type DashboardState} from '@/components/admin/DashboardOverview';
+
+export default function Dashboard(){return <AdminShell title="Executive Dashboard"><DashboardContent/></AdminShell>}
+function DashboardContent(){
+ const {capabilities}=useCapabilities();
+ const[data,setData]=useState<DashboardData|null>(null),[state,setState]=useState<DashboardState>('loading');
+ const request=useRef<AbortController|null>(null),generation=useRef(0);
+ const load=useCallback(async()=>{
+  request.current?.abort();const controller=new AbortController();request.current=controller;const epoch=++generation.current;
+  setData(null);setState('loading');
+  try{const value=parseDashboard(await adminApi<unknown>('/admin-console/dashboard',{signal:controller.signal}));if(epoch===generation.current){setData(value);setState('ready')}}
+  catch(error){if(epoch===generation.current&&!controller.signal.aborted){setData(null);setState(isAccessDenial(error)?'denied':'error')}}
+ },[]);
+ useEffect(()=>{void load();return()=>{generation.current++;request.current?.abort()}},[load]);
+ return <DashboardOverview data={data} state={state} capabilities={capabilities} onRetry={()=>void load()}/>;
+}

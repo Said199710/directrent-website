@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.directrent.app";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export function getAdminToken() {
   if (typeof window === "undefined") return null;
@@ -11,6 +11,14 @@ export function setAdminToken(token: string) {
 
 export function clearAdminToken() {
   sessionStorage.removeItem("directrent_admin_token");
+}
+
+export class AdminApiError extends Error {
+  constructor(message:string,public status:number){super(message);this.name='AdminApiError'}
+}
+
+export function isAccessDenial(error:unknown){
+  return error instanceof AdminApiError && [401,403,404].includes(error.status);
 }
 
 export async function adminApi<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -26,7 +34,8 @@ export async function adminApi<T>(path: string, init: RequestInit = {}): Promise
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.detail || `Request failed (${response.status})`);
+    const detail = Array.isArray(body.detail) ? body.detail.map((x: {msg?:string})=>x.msg || 'Invalid field').join('; ') : body.detail;
+    throw new AdminApiError(detail || `Request failed (${response.status})`,response.status);
   }
   return response.json();
 }

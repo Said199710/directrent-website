@@ -1,141 +1,31 @@
 "use client";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { BarChart3, Users, Building2, ShieldCheck, Scale, CreditCard, Wallet, ScrollText, LogOut, Inbox, Menu, X } from "lucide-react";
-import { adminApi, clearAdminToken, getAdminToken } from "@/lib/admin-api";
-
-const links = [
-  ["/admin", "Dashboard", BarChart3], ["/admin/users", "Users", Users],
-  ["/admin/listings", "Properties", Building2], ["/admin/trust-center", "Trust Center", ShieldCheck],
-  ["/admin/inbox", "Inbox", Inbox],
-  ["/admin/disputes", "Disputes", Scale], ["/admin/payments", "Payments", CreditCard],
-  ["/admin/withdrawals", "Withdrawals", Wallet],
-] as const;
-
-export default function AdminShell({ children, title }: { children: React.ReactNode; title: string }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [access, setAccess] = useState<{ super_admin: boolean; staff_role?: string } | null>(null);
-  const allowedPaths = access?.staff_role === "property_reviewer" ? ["/admin/listings", "/admin/inbox"]
-    : access?.staff_role === "finance_admin" ? ["/admin/payments", "/admin/withdrawals"] : null;
-  const scopedHome = allowedPaths?.[0];
-
-  useEffect(() => {
-    if (pathname === "/admin" && scopedHome) router.replace(scopedHome);
-  }, [pathname, router, scopedHome]);
-  useEffect(() => {
-    if (!getAdminToken()) return;
-    const controller = new AbortController();
-    void adminApi<{ super_admin: boolean; staff_role?: string }>("/admin-console/capabilities", { signal: controller.signal })
-      .then(result => { if (!controller.signal.aborted) setAccess(result); })
-      .catch(() => { if (!controller.signal.aborted) setAccess(null); });
-    return () => controller.abort();
-  }, []);
-  const visibleLinks = access?.super_admin
-    ? [...links, ["/admin/super-admin", "Super Admin", ShieldCheck] as const,
-        ["/admin/audit-logs", "Audit Logs", ScrollText] as const]
-    : links.filter(([href]) => !allowedPaths || allowedPaths.includes(href));
-  const menu = useRef<HTMLDialogElement>(null);
-  const menuButton = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    menu.current?.close();
-  }, [pathname]);
-
-  useEffect(() => {
-    function closeOnDesktop() {
-      if (menuButton.current && menuButton.current.getClientRects().length === 0) {
-        menu.current?.close();
-      }
-    }
-    window.addEventListener("resize", closeOnDesktop);
-    return () => window.removeEventListener("resize", closeOnDesktop);
-  }, []);
-
-  function logout() {
-    menu.current?.close();
-    clearAdminToken();
-    router.push("/admin/login");
-  }
-
-  const navigation = (
-    <>
-      <nav aria-label="Admin navigation" className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-        {visibleLinks.map(([href, label, Icon]) => {
-          const active = pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              onClick={() => menu.current?.close()}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold ${active ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}
-            >
-              <Icon size={18} aria-hidden="true" />{label}
-            </Link>
-          );
-        })}
-      </nav>
-      <button type="button" onClick={logout} className="mt-4 flex shrink-0 items-center justify-center gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-        <LogOut size={17} aria-hidden="true" />Secure logout
-      </button>
-    </>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col border-r border-white/10 bg-slate-950/95 p-6 lg:flex">
-        <div className="mb-9 flex shrink-0 items-center gap-3">
-          <img src="/icons/directrent-app-icon.png" className="h-10 w-10 rounded-xl" alt="" />
-          <div><b>DirectRent</b><p className="text-xs text-slate-400">Admin Command Center</p></div>
-        </div>
-        {navigation}
-      </aside>
-
-      <style>{`
-        @media (prefers-reduced-motion: no-preference) {
-          #admin-mobile-menu[open] { animation: admin-menu-enter 180ms ease-out; }
-          @keyframes admin-menu-enter {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-          }
-        }
-      `}</style>
-      <dialog
-        ref={menu}
-        id="admin-mobile-menu"
-        aria-labelledby="admin-mobile-menu-title"
-        className="fixed inset-y-0 left-0 right-auto m-0 h-full max-h-none w-72 max-w-[85vw] overflow-hidden bg-slate-950 p-0 text-slate-100 backdrop:bg-black/60"
-        onClick={event => { if (event.target === event.currentTarget) menu.current?.close(); }}
-      >
-        <div className="flex h-full min-h-0 flex-col border-r border-white/10 p-4">
-          <div className="mb-4 flex shrink-0 items-center justify-between gap-2">
-            <h2 id="admin-mobile-menu-title" className="font-semibold">Admin Command Center</h2>
-            <button type="button" aria-label="Close menu" className="rounded-lg p-3 hover:bg-white/10" onClick={() => menu.current?.close()}>
-              <X size={20} aria-hidden="true" />
-            </button>
-          </div>
-          {navigation}
-        </div>
-      </dialog>
-
-      <main className="min-w-0 lg:pl-72">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-white/10 bg-slate-950/85 px-5 py-5 backdrop-blur lg:px-9">
-          <button
-            ref={menuButton}
-            type="button"
-            aria-haspopup="dialog"
-            aria-controls="admin-mobile-menu"
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-white/20 px-3 py-3 text-sm lg:hidden"
-            onClick={() => menu.current?.showModal()}
-          >
-            <Menu size={20} aria-hidden="true" />Menu
-          </button>
-          <h1 className="min-w-0 break-words text-xl font-bold">{title}</h1>
-        </header>
-        <div className="p-5 lg:p-9">{children}</div>
-      </main>
-    </div>
-  );
+import Link from 'next/link';
+import {usePathname,useRouter} from 'next/navigation';
+import {useEffect,useState} from 'react';
+import {ArrowUpRight,BadgeCheck,Building2,CheckSquare,ChevronRight,FileClock,FolderKey,Hash,Landmark,LayoutDashboard,LogOut,Mail,MailCheck,Megaphone,MessageCircle,ShieldCheck,ShieldUser,Users,UserRound,Wallet,TriangleAlert} from 'lucide-react';
+import {adminApi,clearAdminToken} from '@/lib/admin-api';
+import {useCapabilities,can} from '@/lib/staff-access';
+import {canUseRoute,routeForPath,visibleNavigation} from '@/lib/admin-navigation';
+import {SidebarProvider,Sidebar,SidebarHeader,SidebarContent,SidebarFooter,SidebarGroup,SidebarGroupLabel,SidebarMenu,SidebarMenuItem,SidebarTrigger,useSidebar} from '@/components/ui/sidebar';
+import {Button,buttonStyles} from '@/components/ui/button';
+import {Badge} from '@/components/ui/badge';
+const icons={dashboard:LayoutDashboard,users:Users,properties:Building2,trust:BadgeCheck,disputes:TriangleAlert,payments:Landmark,withdrawals:Wallet,mail:Mail,messages:MessageCircle,channels:Hash,tasks:CheckSquare,announcements:Megaphone,staff:ShieldUser,roles:FolderKey,'mail-access':MailCheck,audit:FileClock,profile:UserRound};
+export default function AdminShell({children,title}:{children:React.ReactNode;title:string}){
+ return <SidebarProvider><AdminLayout title={title}>{children}</AdminLayout></SidebarProvider>;
+}
+function AdminLayout({children,title}:{children:React.ReactNode;title:string}){
+ const path=usePathname(),router=useRouter();const {capabilities:c,error}=useCapabilities();const{setOpen}=useSidebar();const[signingOut,setSigningOut]=useState(false);
+ const navStamp=JSON.stringify([c?.super_admin,c?.permissions]);
+ useEffect(()=>{if(window.matchMedia('(min-width: 1024px)').matches)document.querySelector<HTMLElement>('aside nav a[aria-current="page"]')?.scrollIntoView({block:'nearest'})},[path,navStamp]);
+ const required=routeForPath(path);const allowed=!required||canUseRoute(c,required.permission);const groups=visibleNavigation(c);
+ useEffect(()=>{setOpen(false)},[path,setOpen]);
+ useEffect(()=>{if(path==='/admin'&&c&&!can(c,'dashboard.read'))router.replace(c.landing)},[path,c,router]);
+ async function logout(){setSigningOut(true);try{await adminApi('/auth/logout',{method:'POST'});clearAdminToken();router.push('/admin/login')}catch{window.alert('Server logout failed. Retry to revoke this session.')}finally{setSigningOut(false)}}
+ return <><a href="#admin-main" className="sr-only fixed left-4 top-4 z-50 rounded-lg bg-brand px-4 py-3 text-white focus:not-sr-only">Skip to content</a>
+ <Sidebar><SidebarHeader><Link href={c?.landing||'/admin/access'} aria-label="DirectRent workspace home" className="flex items-center gap-3 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"><img src="/images/directrent-logo.png" width={44} height={44} alt="DirectRent" className="h-11 w-11 rounded-xl border border-white/10 object-contain"/><span><span className="block text-lg font-bold tracking-tight text-white">DirectRent<span className="text-blue-400">.</span></span><span className="mt-0.5 block text-[10px] font-medium uppercase tracking-[.15em] text-slate-500">Admin Command Center</span></span></Link></SidebarHeader>
+ <SidebarContent><nav aria-label="Admin sections">{groups.map(group=><SidebarGroup key={group.label} className="mb-6 last:mb-0"><SidebarGroupLabel>{group.label}</SidebarGroupLabel><SidebarMenu>{group.items.map(item=>{const Icon=icons[item.icon];const active=required?.href===item.href;return <SidebarMenuItem key={item.href}><Link href={item.href} data-slot="sidebar-menu-button" aria-current={active?'page':undefined} onClick={()=>setOpen(false)} className={'group flex min-h-10 items-center gap-3 rounded-lg border px-3 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 '+(active?'border-blue-500/20 bg-blue-500/15 text-blue-300':'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-100')}><Icon className={'h-[18px] w-[18px] shrink-0 '+(active?'text-blue-400':'text-slate-500 group-hover:text-slate-300')} aria-hidden="true"/><span className="min-w-0 flex-1">{item.label}</span>{active&&<ChevronRight className="h-3.5 w-3.5 text-blue-400" aria-hidden="true"/>}</Link></SidebarMenuItem>})}</SidebarMenu></SidebarGroup>)}</nav>{!c&&<p className="px-3 text-sm text-slate-500">Loading your workspace…</p>}</SidebarContent>
+ <SidebarFooter><div className="mb-3 flex items-center gap-3 px-2 py-1"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-700 bg-slate-800 text-slate-300"><UserRound className="h-4 w-4" aria-hidden="true"/></span><div className="min-w-0"><p className="text-xs font-semibold text-slate-200">{c?.super_admin?'Super admin':'Staff workspace'}</p><p className="mt-0.5 text-[11px] text-slate-500">{c?'Secure staff access':'Authentication required'}</p></div></div><Button type="button" variant="ghost" disabled={signingOut} className="w-full !justify-start" onClick={()=>void logout()}><LogOut aria-hidden="true"/>{signingOut?'Signing out…':'Secure logout'}</Button></SidebarFooter></Sidebar>
+ <div className="min-w-0 lg:pl-[272px]"><header className="sticky top-0 z-20 flex min-h-[76px] items-center justify-between gap-3 border-b border-slate-800 bg-slate-950/95 px-4 backdrop-blur-md sm:px-8"><div className="flex min-w-0 items-center gap-3"><SidebarTrigger/><div className="min-w-0"><p className="mb-0.5 truncate text-[10px] font-semibold uppercase tracking-[.16em] text-slate-500">Admin workspace</p><h1 className="truncate text-base font-semibold tracking-tight text-slate-100">{title}</h1></div></div><div className="flex shrink-0 items-center gap-2 sm:gap-4"><Badge className="hidden !border-blue-500/20 !bg-blue-500/5 !text-blue-300 sm:inline-flex"><span className="h-1.5 w-1.5 rounded-full bg-blue-400"/>Local preview</Badge>{c&&<span className="hidden items-center gap-1.5 text-xs text-slate-500 xl:inline-flex"><ShieldCheck className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true"/>MFA protected</span>}<span className="hidden h-6 w-px bg-slate-800 sm:block"/><Link href="/admin/profile" aria-label="Open My Profile" className={buttonStyles('ghost','icon')}><UserRound aria-hidden="true"/></Link></div></header>
+ <main id="admin-main" tabIndex={-1} className="min-w-0 outline-none"><div className="mx-auto w-full max-w-[1600px] px-4 py-7 sm:px-8 sm:py-9 xl:px-10">{error&&c&&<p role="alert" className="fixed bottom-4 left-4 z-40 max-w-md rounded-xl border border-amber-500/20 bg-slate-900 p-4 text-sm text-amber-200 shadow-xl sm:left-auto sm:right-6">Capability refresh failed. Your view is preserved; the server continues to check every request. {error}</p>}{!c&&error?<div role="alert" className="rounded-xl border border-red-500/20 bg-red-500/10 p-5 text-red-300">{error}<Link href="/admin/login" className="ml-4 underline">Sign in</Link></div>:!c?<p className="py-8 text-sm text-slate-400">Checking access…</p>:!allowed?<div role="alert" className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-6"><ShieldCheck className="mb-3 h-6 w-6 text-amber-300"/><h2 className="font-semibold text-amber-200">Access denied for this role</h2><p className="mt-2 text-sm text-slate-400">This page isn’t available with your current permissions.</p><Link href={c.landing} className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-400">Open your workspace<ArrowUpRight className="h-4 w-4"/></Link></div>:children}</div></main>
+ </div></>;
 }
