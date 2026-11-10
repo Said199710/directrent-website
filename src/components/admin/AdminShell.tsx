@@ -8,7 +8,7 @@ import { adminApi, clearAdminToken, getAdminToken } from "@/lib/admin-api";
 const links = [
   ["/admin", "Dashboard", BarChart3], ["/admin/users", "Users", Users],
   ["/admin/listings", "Properties", Building2], ["/admin/trust-center", "Trust Center", ShieldCheck],
-  ["/admin/inbox", "Inbox", Inbox],
+  ["/admin/inbox", "Inbox", Inbox], ["/admin/website", "Website feedback", BarChart3],
   ["/admin/disputes", "Disputes", Scale], ["/admin/payments", "Payments", CreditCard],
   ["/admin/withdrawals", "Withdrawals", Wallet],
 ] as const;

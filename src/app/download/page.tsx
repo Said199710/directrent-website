@@ -1,8 +1,11 @@
+import Header from "@/components/Header";
+import DownloadPropertyContext from "@/components/DownloadPropertyContext";
+import TrackedLink from "@/components/TrackedLink";
 const apkUrl = "https://downloads.directrent.app/directrent-latest.apk";
 
 export default function DownloadPage() {
   return (
-    <main className="min-h-screen bg-white px-6 py-24 text-slate-950">
+    <><Header /><main className="min-h-screen bg-white px-6 py-12 text-slate-950">
       <section className="mx-auto max-w-5xl text-center">
         <p className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-5 py-2 text-sm font-bold text-blue-600">
           DirectRent Android APK
@@ -17,21 +20,21 @@ export default function DownloadPage() {
           viewing requests, landlord tools, tenant onboarding and rental management.
         </p>
 
-        <div className="mx-auto mt-10 max-w-3xl rounded-[2rem] border border-slate-200 bg-slate-50 p-8 text-left shadow-xl">
+        <DownloadPropertyContext /><div className="mx-auto mt-10 max-w-3xl rounded-[2rem] border border-slate-200 bg-slate-50 p-8 text-left shadow-xl">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-black">Latest Android Build</h2>
               <p className="mt-2 text-slate-600">Version: DirectRent Beta</p>
               <p className="text-slate-600">Platform: Android APK</p>
-              <p className="text-slate-600">File size: about 56 MB</p>
+              <p className="text-slate-600">Google Play: official listing not yet confirmed.</p>
             </div>
 
-            <a
+            <TrackedLink target="android_beta"
               href={apkUrl}
               className="inline-flex justify-center rounded-full bg-blue-600 px-8 py-4 text-center font-bold text-white hover:bg-blue-700"
             >
               Download APK
-            </a>
+            </TrackedLink>
           </div>
 
           <div className="mt-8 rounded-3xl bg-white p-6">
@@ -53,10 +56,10 @@ export default function DownloadPage() {
         <div className="mx-auto mt-8 max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-6 text-left">
           <h3 className="text-xl font-black">iPhone users</h3>
           <p className="mt-3 text-slate-600">
-            iOS support will be prepared later through Apple App Store or approved TestFlight distribution.
+            The iPhone app is not available for download yet. No official App Store or TestFlight link has been confirmed. You can browse homes and property details on this website.
           </p>
         </div>
       </section>
-    </main>
+    </main></>
   );
 }

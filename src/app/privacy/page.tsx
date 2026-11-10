@@ -19,6 +19,10 @@ export default function PrivacyPage() {
             <p className="mt-3">We use data to verify listings, improve safety, connect tenants with landlords, manage requests and improve the DirectRent platform.</p>
           </div>
           <div>
+            <h2 className="text-2xl font-black text-slate-950">Website feedback, comments and statistics</h2>
+            <p className="mt-3">Website feedback is private to authorized administrators. Property comments are reviewed before they become public. Please do not include contact details or exact addresses in comments. We count searches by a fixed neighbourhood category, no-result searches, property views and download or store clicks. Analytics events do not contain raw search text, contact details or precise locations. Clicks do not confirm app installs. Short-lived, hashed network identifiers help limit spam and are separate from usage counts.</p>
+          </div>
+          <div>
             <h2 className="text-2xl font-black text-slate-950">Contact</h2>
             <p className="mt-3">For privacy requests, contact support@directrent.app.</p>
           </div>

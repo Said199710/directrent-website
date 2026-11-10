@@ -1,3 +1,4 @@
+import TrackedLink from "@/components/TrackedLink";
 export default function Footer() {
   return (
     <footer className="bg-slate-950 px-6 py-14 text-white">
@@ -14,8 +15,9 @@ export default function Footer() {
           <h4 className="font-black">Platform</h4>
           <div className="mt-4 space-y-3 text-sm text-slate-400">
             <a className="block hover:text-white" href="/">Home</a>
+            <a className="block hover:text-white" href="/feedback">Give feedback</a>
             <a className="block hover:text-white" href="/#features">Features</a>
-            <a className="block hover:text-white" href="/download">Download App</a>
+            <TrackedLink target="download" className="block hover:text-white" href="/download">Download App</TrackedLink>
             <a className="block hover:text-white" href="/#investors">Investors</a>
           </div>
         </div>

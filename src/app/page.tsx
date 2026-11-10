@@ -1,33 +1,23 @@
 import { ArrowRight, CheckCircle2, Mail, TrendingUp } from "lucide-react";
 import Header from "@/components/Header";
-import { HeroMockup, PhoneMockup } from "@/components/Mockups";
+import RentalCatalog from "@/components/RentalCatalog";
+import { PhoneMockup } from "@/components/Mockups";
 import { Reveal } from "@/components/Motion";
-import { features, footer, investorStats, landlordBenefits, problems, steps, tenantBenefits, testimonials, trust } from "@/lib/data";
+import { features, footer, investorStats, landlordBenefits, problems, steps, tenantBenefits, trust } from "@/lib/data";
 
 export default function Home() {
   return (
     <main id="home" className="overflow-hidden bg-white">
       <Header />
-      <section className="relative bg-gradient-to-b from-white via-blue-50/50 to-white pt-32">
-        <div className="absolute inset-0 -z-0 bg-grid bg-[size:44px_44px] opacity-60" />
-        <div className="container-px relative mx-auto grid max-w-7xl items-center gap-14 pb-20 pt-8 lg:grid-cols-[1.05fr_.95fr] lg:pb-28">
-          <Reveal>
-            <div>
-              <span className="badge">Verified Connections. Transparent Renting.</span>
-              <h1 className="mt-8 max-w-4xl text-5xl font-black tracking-[-0.045em] text-ink sm:text-6xl lg:text-7xl">Find Verified Rental Homes Directly From Landlords</h1>
-              <p className="mt-7 max-w-2xl text-xl leading-9 text-slate-600">DirectRent helps tenants find trusted rental properties while helping landlords fill vacancies faster.</p>
-              <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-                <a href="/download" className="inline-flex items-center justify-center gap-2 rounded-full bg-ink px-7 py-4 font-black text-white shadow-premium hover:bg-slate-800">Download Android APK <ArrowRight size={18}/></a>
-                <a href="#features" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-7 py-4 font-black text-ink shadow-sm hover:border-brand">Explore Properties</a>
-              </div>
-              <div className="mt-10 grid max-w-xl grid-cols-3 gap-4 text-center">
-                {["No brokers", "Verified listings", "Direct landlords"].map((x) => <div key={x} className="rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm font-black text-slate-700 shadow-sm">{x}</div>)}
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}><HeroMockup /></Reveal>
+      <section className="bg-slate-950 text-white">
+        <div className="container-px mx-auto max-w-7xl py-6 sm:py-10">
+          <p className="text-sm font-bold uppercase tracking-widest text-emerald-300">Verified rentals in Tanzania</p>
+          <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-tight sm:text-6xl">Find a place to call home.</h1>
+          <p className="mt-3 max-w-xl text-base text-slate-300 sm:text-lg">Browse available homes by neighbourhood and monthly budget. Connect with landlords through DirectRent.</p>
+          <a href="#properties" className="mt-4 inline-block rounded-xl bg-emerald-300 px-5 py-3 font-bold text-slate-950">Find a home</a>
         </div>
       </section>
+      <RentalCatalog />
 
       <section id="about" className="section container-px mx-auto max-w-7xl">
         <Reveal><span className="badge">The problem</span><h2 className="h2 mt-6">Rental search in Tanzania needs trust, speed and transparency.</h2><p className="lead max-w-3xl">DirectRent is designed around the real pain points tenants and landlords face every day.</p></Reveal>
@@ -46,7 +36,7 @@ export default function Home() {
         <div className="mt-12 grid gap-6 md:grid-cols-4">{steps.map((s, i) => <Reveal key={s}><div className="card"><div className="mb-5 grid h-12 w-12 place-items-center rounded-full bg-ink font-black text-white">{i+1}</div><h3 className="text-xl font-black text-ink">{s}</h3></div></Reveal>)}</div>
       </section>
 
-      <section className="section bg-ink text-white">
+      <section id="landlords" className="section scroll-mt-24 bg-ink text-white">
         <div className="container-px mx-auto grid max-w-7xl gap-10 lg:grid-cols-2">
           <Audience title="For Tenants" items={tenantBenefits} />
           <Audience title="For Landlords" items={landlordBenefits} />
@@ -67,10 +57,6 @@ export default function Home() {
 
       <section id="app" className="section container-px mx-auto max-w-7xl">
         <div className="grid items-center gap-12 lg:grid-cols-[.8fr_1.2fr]"><Reveal><div><span className="badge">App showcase</span><h2 className="h2 mt-6">Mobile-first experience for tenants and landlords.</h2><p className="lead">Realistic app flows for verified listing discovery, viewing approval and property management.</p></div></Reveal><div className="grid gap-8 md:grid-cols-2"><PhoneMockup title="Find homes" subtitle="Verified rental listings near you."/><PhoneMockup title="Manage units" subtitle="Landlord vacancy and tenant tools."/></div></div>
-      </section>
-
-      <section className="section bg-slate-50">
-        <div className="container-px mx-auto max-w-7xl"><Reveal><span className="badge">Testimonials</span><h2 className="h2 mt-6">Designed around real rental pain.</h2></Reveal><div className="mt-12 grid gap-6 lg:grid-cols-3">{testimonials.map((t) => <Reveal key={t.name}><div className="card"><p className="text-lg leading-8 text-slate-700">“{t.quote}”</p><div className="mt-6"><p className="font-black text-ink">{t.name}</p><p className="text-sm text-slate-500">{t.role}</p></div></div></Reveal>)}</div></div>
       </section>
 
       <section id="investors" className="section container-px mx-auto max-w-7xl">
